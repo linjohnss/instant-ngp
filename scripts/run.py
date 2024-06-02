@@ -181,6 +181,7 @@ if __name__ == "__main__":
 	tqdm_last_update = 0
 	if n_steps > 0:
 		with tqdm(desc="Training", total=n_steps, unit="steps") as t:
+			start_time = time.monotonic()
 			while testbed.frame():
 				if testbed.want_repl():
 					repl(testbed)
@@ -202,6 +203,7 @@ if __name__ == "__main__":
 					t.set_postfix(loss=testbed.loss)
 					old_training_step = testbed.training_step
 					tqdm_last_update = now
+			training_time = time.monotonic() - start_time
 
 	if args.save_snapshot:
 		os.makedirs(os.path.dirname(args.save_snapshot), exist_ok=True)
@@ -275,24 +277,42 @@ if __name__ == "__main__":
 
 	if ref_transforms:
 		testbed.fov_axis = 0
-		testbed.fov = ref_transforms["camera_angle_x"] * 180 / np.pi
+		# testbed.fov = ref_transforms["camera_angle_x"] * 180 / np.pi
+		fl_x = ref_transforms["fl_x"]
+		w = ref_transforms["w"]
+		camera_angle_x = 2 * np.arctan(w / (2 * fl_x))
+		testbed.fov = camera_angle_x * 180 / np.pi
 		if not args.screenshot_frames:
 			args.screenshot_frames = range(len(ref_transforms["frames"]))
 		print(args.screenshot_frames)
-		for idx in args.screenshot_frames:
-			f = ref_transforms["frames"][int(idx)]
-			cam_matrix = f.get("transform_matrix", f["transform_matrix_start"])
-			testbed.set_nerf_camera_matrix(np.matrix(cam_matrix)[:-1,:])
-			outname = os.path.join(args.screenshot_dir, os.path.basename(f["file_path"]))
+		with tqdm(total=len(args.screenshot_frames)) as pbar:
+			for idx in args.screenshot_frames:
+				f = ref_transforms["frames"][int(idx)]
+				if 'transform_matrix' in f:
+					cam_matrix = f['transform_matrix']
+				elif 'transform_matrix_start' in f:
+					cam_matrix = f["transform_matrix_start"]
+				else:
+					raise KeyError()
+				testbed.set_nerf_camera_matrix(np.matrix(cam_matrix)[:-1,:])
+				outname = os.path.join(args.screenshot_dir, os.path.basename(f["file_path"]))
 
-			# Some NeRF datasets lack the .png suffix in the dataset metadata
-			if not os.path.splitext(outname)[1]:
-				outname = outname + ".png"
+				# Some NeRF datasets lack the .png suffix in the dataset metadata
+				if not os.path.splitext(outname)[1]:
+					outname = outname + ".png"
 
-			print(f"rendering {outname}")
-			image = testbed.render(args.width or int(ref_transforms["w"]), args.height or int(ref_transforms["h"]), args.screenshot_spp, True)
-			os.makedirs(os.path.dirname(outname), exist_ok=True)
-			write_image(outname, image)
+				pbar.set_description(outname)
+				image = testbed.render(args.width or int(ref_transforms["w"]), args.height or int(ref_transforms["h"]), args.screenshot_spp, True)
+				os.makedirs(os.path.dirname(outname), exist_ok=True)
+				write_image(outname, image)
+				pbar.update(1)
+		# save training time to txt
+		with open(os.path.join(args.screenshot_dir, "training_time.txt"), "w") as f:
+			f.write(f"{training_time:.2f}")
+		# save metrics to txt (CSV)
+		with open(os.path.join(args.screenshot_dir, "metrics.txt"), "w") as f:
+			f.write(f"PSNR,SSIM,TIME\n{psnr},{ssim},{training_time:.2f}")
+
 	elif args.screenshot_dir:
 		outname = os.path.join(args.screenshot_dir, args.scene + "_" + network_stem)
 		print(f"Rendering {outname}.png")
