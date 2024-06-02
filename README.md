@@ -16,6 +16,8 @@ For business inquiries, please submit the [NVIDIA research licensing form](https
 
 
 # This is a clone of the original repo!
+<img src="docs/assets_readme/360_vis.gif" width="100%"/>
+
 ## changes made
 - Add training time record and eval metric
 - Add Mip-NeRF 360 dataset converter
