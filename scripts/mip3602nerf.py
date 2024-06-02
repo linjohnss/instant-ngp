@@ -66,6 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--images', type=str, default='images_4', help="images folder (do not include full path, e.g., just use `images_4`)")
     parser.add_argument('--downscale', type=float, default=4, help="image size down scale, e.g., 4")
     parser.add_argument('--hold', type=int, default=8, help="hold out for validation every $ images")
+    parser.add_argument('--aabb_scale', type=float, default=2, help="aabb scale (default 2)")
 
     opt = parser.parse_args()
     print(f'[INFO] process {opt.path}')
@@ -167,7 +168,7 @@ if __name__ == '__main__':
             'fl_y': fl,
             'cx': W // 2,
             'cy': H // 2,
-            'aabb_scale': 2,
+            'aabb_scale': opt.aabb_scale,
             'frames': frames,
         }
 

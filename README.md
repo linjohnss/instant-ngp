@@ -15,6 +15,12 @@ In each case, we train and render a MLP with multiresolution hash input encoding
 For business inquiries, please submit the [NVIDIA research licensing form](https://www.nvidia.com/en-us/research/inquiries/).
 
 
+# This is a clone of the original repo!
+## changes made
+- Add training time record and eval metric
+- Add Mip-NeRF 360 dataset converter
+- Add run script for NeRF Synthetic and Mip-NeRF 360 Dataset 
+
 ## Installation
 
 If you have Windows, download one of the following releases corresponding to your graphics card and extract it. Then, start `instant-ngp.exe`.
