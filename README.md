@@ -20,6 +20,15 @@ For business inquiries, please submit the [NVIDIA research licensing form](https
 - Add training time record and eval metric
 - Add Mip-NeRF 360 dataset converter
 - Add run script for NeRF Synthetic and Mip-NeRF 360 Dataset 
+## Visual comparisons on different hash table size
+<img src="docs/assets_readme/hash_t.png" width="100%"/>
+
+## Visual comparisons on different aabb scale
+<img src="docs/assets_readme/360_compare.png" width="100%"/>
+
+
+
+
 
 ## Installation
 
